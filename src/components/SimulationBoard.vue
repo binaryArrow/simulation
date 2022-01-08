@@ -1,12 +1,16 @@
 <template>
   <div>
-    <canvas ref="board" width="1000" height="600" @click="drawLine"></canvas>
+    <canvas ref="board" width="1000" height="600" @click="createStreet"></canvas>
   </div>
+  <button @click="loop(0, 0)">Start</button>
+  <button @click="createCar">Add Car</button>
+
 </template>
 
 <script lang="ts">
 import {defineComponent} from 'vue';
-import {Street} from "@/models/Street";
+import {Coordinates, Street} from "@/models/Street";
+import {Car} from "@/models/Car";
 
 export default defineComponent({
   name: 'SimulationBoard',
@@ -16,7 +20,8 @@ export default defineComponent({
       context: {} as CanvasRenderingContext2D,
       canvasFromView: {} as HTMLCanvasElement,
       clicks: 0,
-      streets: [] as Street[],
+      street: {} as Street,
+      cars: [] as Car[],
       lastMouseClickPositionX: 0,
       lastMouseClickPositionY: 0,
     }
@@ -26,35 +31,47 @@ export default defineComponent({
     this.context = this.canvasFromView.getContext('2d') as CanvasRenderingContext2D
   },
   methods: {
-    drawCar(x: number, y: number) {
-      this.context.beginPath()
-      this.context.arc(x, y, 10, 0, Math.PI * 2, false)
-      this.context.fillStyle = '#000'
-      this.context.fill()
+    createCar(event: any) {
+      let rect = this.canvasFromView.getBoundingClientRect()
+      this.cars.push(new Car(this.street.coordinates[0].x, this.street.coordinates[0].y))
+      if (this.cars.length > 0)
+        this.cars.forEach(car => {
+          car.drawCar(this.context)
+        })
     },
     loop(x: number, y: number) {
       this.context.clearRect(0, 0, this.canvasFromView.width, this.canvasFromView.height)
-      this.drawCar(x + 1, y + 1)
+      if(Object.keys(this.street).length > 0)
+        this.street.drawStreet(this.context)
+      this.cars[0].posX+=1
+      this.cars[0].drawCar(this.context)
       setTimeout(() => this.loop(x + 1, y + 1), 100)
     },
-    drawLine(event: any) {
+    createStreet(event: any) {
       let rect = this.canvasFromView.getBoundingClientRect()
       this.clicks += 1
       if (this.clicks > 1) {
-        this.streets.push(new Street(
+        // last Coordinate
+        let coordinate1: Coordinates = new Coordinates(
             this.lastMouseClickPositionX,
-            this.lastMouseClickPositionY,
+            this.lastMouseClickPositionY)
+        // actual coordinate
+        let coordinate2: Coordinates = new Coordinates(
             event.clientX - rect.left,
-            event.clientY - rect.top))
+            event.clientY - rect.top
+        )
+        if (Object.keys(this.street).length > 0) {
+          this.street.addCoordinate(coordinate2)
+        } else {
+          this.street = new Street(coordinate1, coordinate2)
+        }
       }
-      if(this.streets.length > 0){
-        this.streets.forEach(street => {
-          street.drawStreet(this.context)
-        })
-      }
+      if (Object.keys(this.street).length > 0)
+        this.street.drawStreet(this.context)
+
       this.lastMouseClickPositionX = event.clientX - rect.left
       this.lastMouseClickPositionY = event.clientY - rect.top
-    }
+    },
   },
 });
 </script>

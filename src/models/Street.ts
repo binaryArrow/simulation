@@ -1,27 +1,35 @@
+export class Coordinates {
+    x: number
+    y: number
+    constructor(x: number, y: number) {
+        this.x = x
+        this.y = y
+    }
+}
 export class Street {
-    x1: number
-    x2: number
-    y1: number
-    y2: number
+    coordinates: Coordinates[] = []
 
-    constructor(x1: number, y1: number, x2: number, y2: number) {
-        this.x1 = x1
-        this.x2 = x2
-        this.y1 = y1
-        this.y2 = y2
+    constructor(c: Coordinates, c2: Coordinates) {
+        this.coordinates.push(c)
+        this.coordinates.push(c2)
+    }
+
+    addCoordinate(c: Coordinates): void{
+        this.coordinates.push(c)
     }
 
     drawStreet(context: CanvasRenderingContext2D): void{
-        context.lineWidth = 15
         context.beginPath()
-        context.moveTo(this.x1, this.y1)
-        context.lineTo(this.x2, this.y2)
-        context.strokeStyle = '#000'
-        context.stroke()
-        context.lineWidth = 13
-        context.moveTo(this.x1, this.y1)
-        context.lineTo(this.x2, this.y2)
-        context.strokeStyle = '#fff'
-        context.stroke()
+        context.moveTo(this.coordinates[0].x, this.coordinates[0].y)
+        for(let i = 1; i < this.coordinates.length; i++){
+            context.lineWidth = 20
+            context.lineTo(this.coordinates[i].x, this.coordinates[i].y)
+            context.strokeStyle = '#000'
+            context.stroke()
+            context.lineWidth = 17
+            context.lineTo(this.coordinates[i].x, this.coordinates[i].y)
+            context.strokeStyle = '#fff'
+            context.stroke()
+        }
     }
 }
