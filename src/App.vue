@@ -1,16 +1,13 @@
 <template>
-  <img alt="Vue logo" src="./assets/logo.png">
-  <HelloWorld msg="Welcome to Your Vue.js + TypeScript App"/>
+  <simulation-board></simulation-board>
 </template>
-
 <script lang="ts">
 import { defineComponent } from 'vue';
-import HelloWorld from './components/HelloWorld.vue';
-
+import SimulationBoard from "@/components/SimulationBoard.vue";
 export default defineComponent({
   name: 'App',
   components: {
-    HelloWorld
+    SimulationBoard
   }
 });
 </script>
