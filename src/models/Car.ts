@@ -13,6 +13,7 @@ export class Car {
     sin?: number // for X position
     cos?: number // for Y position
     count = 0
+    brake = false
 
     constructor(id: number, posX: number, posY: number, speed: number, streets: Coordinates[]) {
         this.id = id
@@ -39,7 +40,7 @@ export class Car {
     }
 
     drive(context: CanvasRenderingContext2D): void {
-        if (this.streets.length > 1 && this.count < this.streets.length - 1) {
+        if (this.streets.length > 1 && this.count < this.streets.length - 1 && !this.brake) {
             this.angle = Math.atan2(
                 this.streets[this.count + 1].y - this.streets[this.count].y,
                 this.streets[this.count + 1].x - this.streets[this.count].x
@@ -68,5 +69,6 @@ reset(): void{
         this.posX = this.initialPosX
     this.posY = this.initialPosY
     this.count = 0
+    this.brake = false
 }
 }

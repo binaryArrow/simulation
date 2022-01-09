@@ -22,7 +22,7 @@
       </td>
       <td>
         {{car.speed}}
-        <button id="brake-button">brake</button>
+        <button id="brake-button" @click="brake(index)">brake</button>
       </td>
     </tr>
   </table>
@@ -76,6 +76,9 @@ export default defineComponent({
     },
     deleteCar(index: number){
       this.cars.splice(index, 1)
+    },
+    brake(index: number){
+      this.cars[index].brake = true
     },
     loop() {
       if(!this.resetCar){
