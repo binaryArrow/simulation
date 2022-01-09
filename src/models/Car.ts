@@ -1,21 +1,31 @@
 import {Coordinates} from "@/models/Street";
 
 export class Car {
+    id: number
+    initialPosX: number
+    initialPosY: number
     posX: number
     posY: number
     speed: number
     streets: Coordinates[]
-    angle?: number
+    angle: number
     // angle for moving
     sin?: number // for X position
     cos?: number // for Y position
     count = 0
 
-    constructor(posX: number, posY: number, speed: number, streets: Coordinates[]) {
+    constructor(id: number, posX: number, posY: number, speed: number, streets: Coordinates[]) {
+        this.id = id
         this.posX = posX
         this.posY = posY
+        this.initialPosX = posX
+        this.initialPosY = posY
         this.speed = speed
         this.streets = streets
+        this.angle = Math.atan2(
+            this.streets[this.count + 1].y - this.streets[this.count].y,
+            this.streets[this.count + 1].x - this.streets[this.count].x
+        )
     }
 
     drawCar(context: CanvasRenderingContext2D): void {
@@ -23,6 +33,9 @@ export class Car {
         context.arc(this.posX, this.posY, 10, 0, Math.PI * 2, false)
         context.fillStyle = '#000'
         context.fill()
+        context.fillStyle = '#fff'
+        context.font = 'bold 15px serif'
+        context.fillText(`${this.id}`, this.posX - 5, this.posY + 6)
     }
 
     drive(context: CanvasRenderingContext2D): void {
@@ -51,4 +64,9 @@ export class Car {
         }
         this.drawCar(context)
     }
+reset(): void{
+        this.posX = this.initialPosX
+    this.posY = this.initialPosY
+    this.count = 0
+}
 }
