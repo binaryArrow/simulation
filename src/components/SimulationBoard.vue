@@ -2,7 +2,7 @@
   <div>
     <canvas ref="board" width="1000" height="600" @click="createStreet"></canvas>
   </div>
-  <button @click="loop(0, 0)">Start</button>
+  <button @click="loop">Start</button>
   <button @click="createCar">Add Car</button>
 
 </template>
@@ -33,19 +33,28 @@ export default defineComponent({
   methods: {
     createCar(event: any) {
       let rect = this.canvasFromView.getBoundingClientRect()
-      this.cars.push(new Car(this.street.coordinates[0].x, this.street.coordinates[0].y))
+      let start = new Coordinates(
+          this.street.coordinates[0].x,
+          this.street.coordinates[0].y
+      )
+      let end = new Coordinates(
+          this.street.coordinates[this.street.coordinates.length - 1].x,
+          this.street.coordinates[this.street.coordinates.length - 1].y
+      )
+      this.cars.push(new Car(this.street.coordinates[0].x, this.street.coordinates[0].y, 20, start, end))
       if (this.cars.length > 0)
         this.cars.forEach(car => {
           car.drawCar(this.context)
         })
     },
-    loop(x: number, y: number) {
+    loop() {
       this.context.clearRect(0, 0, this.canvasFromView.width, this.canvasFromView.height)
-      if(Object.keys(this.street).length > 0)
+      if (Object.keys(this.street).length > 0)
         this.street.drawStreet(this.context)
-      this.cars[0].posX+=1
+      this.cars[0].posX += this.cars[0].cos!
+      this.cars[0].posY += this.cars[0].sin!
       this.cars[0].drawCar(this.context)
-      setTimeout(() => this.loop(x + 1, y + 1), 100)
+      setTimeout(() => this.loop(), 100)
     },
     createStreet(event: any) {
       let rect = this.canvasFromView.getBoundingClientRect()
