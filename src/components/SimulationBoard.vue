@@ -2,19 +2,22 @@
   <div>
     <canvas ref="board" width="1000" height="600" @click="createStreet"></canvas>
   </div>
-  <button @click="loop">Start</button>
-  <button @click="createCar">Add Car</button>
+  <div class="modal-container">
+
+  </div>
+  <button class="start_button" @click="loop">Start</button>
+  <button class="car_button" @click="createCar">Add Car</button>
+  <input v-model="speed" placeholder="speed">
 
 </template>
 
 <script lang="ts">
-import {defineComponent} from 'vue';
+import {defineComponent, ref} from 'vue';
 import {Coordinates, Street} from "@/models/Street";
 import {Car} from "@/models/Car";
 
 export default defineComponent({
   name: 'SimulationBoard',
-
   data() {
     return {
       context: {} as CanvasRenderingContext2D,
@@ -22,6 +25,7 @@ export default defineComponent({
       clicks: 0,
       street: {} as Street,
       cars: [] as Car[],
+      speed: 0,
       lastMouseClickPositionX: 0,
       lastMouseClickPositionY: 0,
     }
@@ -36,7 +40,7 @@ export default defineComponent({
       this.cars.push(new Car(
           this.street.coordinates[0].x,
           this.street.coordinates[0].y,
-          20,
+          this.speed,
           this.street.coordinates
           )
       )
@@ -51,7 +55,9 @@ export default defineComponent({
       this.context.clearRect(0, 0, this.canvasFromView.width, this.canvasFromView.height)
       if (Object.keys(this.street).length > 0)
         this.street.drawStreet(this.context)
-      this.cars[0].drive(this.context)
+      this.cars.forEach(car => {
+        car.drive(this.context)
+      })
       setTimeout(() => this.loop(), 100)
     },
     createStreet(event: any) {
@@ -78,7 +84,7 @@ export default defineComponent({
 
       this.lastMouseClickPositionX = event.clientX - rect.left
       this.lastMouseClickPositionY = event.clientY - rect.top
-    },
+    }
   },
 });
 </script>
@@ -86,10 +92,71 @@ export default defineComponent({
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
 
+button {
+  padding: 13px 18px;
+  font-size: 19px;
+  margin: 4px;
+  text-align: center;
+  cursor: pointer;
+  outline: none;
+  color: #fff;
+  border: none;
+  border-radius: 15px;
+  box-shadow: 0 9px #999;
+}
+
+.car_button{
+  background-color: #4CAF50;
+}
+.car_button:hover {
+  background-color: #50d354;
+}
+.car_button:active{
+  background-color: #50d354;
+  box-shadow: 0 5px #666;
+  transform: translateY(4px);
+}
+
+.start_button{
+  background-color: #5ca4cb;
+}
+.start_button:hover{
+  background-color: #5eb6e8;
+}
+.start_button:active{
+  background-color: #5eb6e8;
+  box-shadow: 0 5px #666;
+  transform: translateY(4px);
+}
+#cancel-button{
+  background-color: darkred;
+}
+#cancel-button:hover{
+background-color: red;
+}
+#cancel-button:active{
+  background-color: red;
+  box-shadow: 0 5px #666;
+  transform: translateY(4px);
+}
+
 canvas {
   background-color: #a2b5da;
   border: 2px solid black;
   border-radius: 10px;
+}
+
+.modal-container {
+  grid-column: 2;
+  grid-row: 2;
+}
+
+.modal-content {
+  top: 40px;
+  background: #ffffff;
+  width: 400px;
+  border-radius: 10px;
+  border: 2px solid black;
 }
 
 h3 {
