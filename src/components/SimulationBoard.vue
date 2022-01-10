@@ -21,7 +21,7 @@
         <button id="brake-button" @click="deleteCar(index)">delete</button>
       </td>
       <td>
-        {{car.speed}}
+        {{car.initialSpeed}}
         <button id="brake-button" @click="brake(index)">brake</button>
       </td>
     </tr>
@@ -44,7 +44,7 @@ export default defineComponent({
       street: {} as Street,
       cars: [] as Car[],
       carId: 0,
-      speed: 0,
+      speed: "0",
       lastMouseClickPositionX: 0,
       lastMouseClickPositionY: 0,
       resetCar: true
@@ -56,13 +56,12 @@ export default defineComponent({
     this.loop()
   },
   methods: {
-    createCar(event: any) {
-      let rect = this.canvasFromView.getBoundingClientRect()
+    createCar() {
       this.cars.push(new Car(
           this.carId,
           this.street.coordinates[0].x,
           this.street.coordinates[0].y,
-          this.speed,
+          parseInt(this.speed),
           this.street.coordinates
           )
       )
@@ -78,6 +77,7 @@ export default defineComponent({
       this.cars.splice(index, 1)
     },
     brake(index: number){
+      this.cars[index].brakePosition = new Coordinates(this.cars[index].posX, this.cars[index].posY)
       this.cars[index].brake = true
     },
     loop() {

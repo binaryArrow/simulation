@@ -6,6 +6,7 @@ export class Car {
     initialPosY: number
     posX: number
     posY: number
+    initialSpeed: number
     speed: number
     streets: Coordinates[]
     angle: number
@@ -14,6 +15,8 @@ export class Car {
     cos?: number // for Y position
     count = 0
     brake = false
+    brakeLength = 0
+    brakePosition?: Coordinates
 
     constructor(id: number, posX: number, posY: number, speed: number, streets: Coordinates[]) {
         this.id = id
@@ -22,6 +25,7 @@ export class Car {
         this.initialPosX = posX
         this.initialPosY = posY
         this.speed = speed
+        this.initialSpeed = speed
         this.streets = streets
         this.angle = Math.atan2(
             this.streets[this.count + 1].y - this.streets[this.count].y,
@@ -40,7 +44,9 @@ export class Car {
     }
 
     drive(context: CanvasRenderingContext2D): void {
-        if (this.streets.length > 1 && this.count < this.streets.length - 1 && !this.brake) {
+        if (this.streets.length > 1 && this.count < this.streets.length - 1) {
+            if(this.brake)
+                this.brakeCar()
             this.angle = Math.atan2(
                 this.streets[this.count + 1].y - this.streets[this.count].y,
                 this.streets[this.count + 1].x - this.streets[this.count].x
@@ -52,12 +58,14 @@ export class Car {
             const a = this.posX - this.streets[this.count + 1].x
             const b = this.posY - this.streets[this.count + 1].y
             console.log(`x: ${this.posX} y: ${this.posY}`)
+            //distance between car and wall
             console.log(Math.hypot(a, b))
 
             // look if car is hitting a wall
             // if so change direction to next street vector
-            if(Math.hypot(a, b) < 10){
-                this.count ++
+            // 10 is the radius of the car circle
+            if (Math.hypot(a, b) < 10) {
+                this.count++
 
                 this.posX = this.streets[this.count].x
                 this.posY = this.streets[this.count].y
@@ -65,10 +73,24 @@ export class Car {
         }
         this.drawCar(context)
     }
-reset(): void{
+
+    reset(): void {
         this.posX = this.initialPosX
-    this.posY = this.initialPosY
-    this.count = 0
-    this.brake = false
-}
+        this.posY = this.initialPosY
+        this.count = 0
+        this.brake = false
+        this.speed = this.initialSpeed
+    }
+    brakeCar(): void{
+        //TODO: maybe consider calculating brakelength and braking along that length?
+        console.log("braked!!!!")
+        this.speed -= 0.6
+        if(this.speed < 0){
+            const a = this.brakePosition!.x - this.posX
+            const b = this.brakePosition!.y - this.posY
+            this.brakeLength = Math.hypot(a, b)
+            console.log(`BrakeLength = ${this.brakeLength}`)
+            this.speed = 0
+        }
+    }
 }
