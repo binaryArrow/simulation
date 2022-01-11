@@ -7,7 +7,8 @@ export class Car {
     posX: number
     posY: number
     initialSpeed: number
-    speed: number
+    speed: number // in kmh
+    convertedSpeedInPx: number // in pixel
     streets: Coordinates[]
     angle: number
     // angle for moving
@@ -25,6 +26,7 @@ export class Car {
         this.initialPosX = posX
         this.initialPosY = posY
         this.speed = speed
+        this.convertedSpeedInPx = speed/10
         this.initialSpeed = speed
         this.streets = streets
         this.angle = Math.atan2(
@@ -51,8 +53,8 @@ export class Car {
                 this.streets[this.count + 1].y - this.streets[this.count].y,
                 this.streets[this.count + 1].x - this.streets[this.count].x
             )
-            this.sin = Math.sin(this.angle) * this.speed
-            this.cos = Math.cos(this.angle) * this.speed
+            this.sin = Math.sin(this.angle) * this.convertedSpeedInPx
+            this.cos = Math.cos(this.angle) * this.convertedSpeedInPx
             this.posX += this.cos
             this.posY += this.sin
             const a = this.posX - this.streets[this.count + 1].x
@@ -82,15 +84,15 @@ export class Car {
         this.speed = this.initialSpeed
     }
     brakeCar(): void{
-        //TODO: maybe consider calculating brakelength and braking along that length?
         console.log("braked!!!!")
-        this.speed -= 0.6
-        if(this.speed < 0){
+        //Bremsbeschleunigung konstante, Siehe Ausarbeitung.
+        this.convertedSpeedInPx -= 0.2777777777777778
+        if(this.convertedSpeedInPx < 0){
             const a = this.brakePosition!.x - this.posX
             const b = this.brakePosition!.y - this.posY
             this.brakeLength = Math.hypot(a, b)
             console.log(`BrakeLength = ${this.brakeLength}`)
-            this.speed = 0
+            this.convertedSpeedInPx = 0
         }
     }
 }
