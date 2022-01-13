@@ -11,6 +11,7 @@ export class Car {
     convertedSpeedInPx: number // in pixel
     streets: Coordinates[]
     angle: number
+    distanceToFrontCar: number
     // angle for moving
     sin?: number // for X position
     cos?: number // for Y position
@@ -18,8 +19,9 @@ export class Car {
     brake = false
     brakeLength = 0
     brakePosition?: Coordinates
+    startDrive = false
 
-    constructor(id: number, posX: number, posY: number, speed: number, streets: Coordinates[]) {
+    constructor(id: number, posX: number, posY: number, speed: number, streets: Coordinates[], distanceToFrontCar: number) {
         this.id = id
         this.posX = posX
         this.posY = posY
@@ -29,6 +31,7 @@ export class Car {
         this.convertedSpeedInPx = speed/10
         this.initialSpeed = speed
         this.streets = streets
+        this.distanceToFrontCar = distanceToFrontCar
         this.angle = Math.atan2(
             this.streets[this.count + 1].y - this.streets[this.count].y,
             this.streets[this.count + 1].x - this.streets[this.count].x
@@ -62,6 +65,7 @@ export class Car {
             console.log(`x: ${this.posX} y: ${this.posY}`)
             //distance between car and wall
             console.log(Math.hypot(a, b))
+            this.startDrive = true
 
             // look if car is hitting a wall
             // if so change direction to next street vector
@@ -82,6 +86,8 @@ export class Car {
         this.count = 0
         this.brake = false
         this.speed = this.initialSpeed
+        this.convertedSpeedInPx = this.initialSpeed/10
+        this.startDrive = false
     }
     brakeCar(): void{
         console.log("braked!!!!")

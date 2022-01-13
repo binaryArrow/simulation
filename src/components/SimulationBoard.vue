@@ -10,6 +10,8 @@
   <input id="speed-input" v-model="speed" placeholder="speed">
   <label>id: </label>
   <input id="carId-input" v-model="carId" placeholder="">
+  <label>distance to Car in front: </label>
+  <input id="carId-input" v-model="distanceToFrontCar" placeholder="">
   <table id="cars-table">
     <tr>
       <th>car id</th>
@@ -47,7 +49,8 @@ export default defineComponent({
       speed: "0",
       lastMouseClickPositionX: 0,
       lastMouseClickPositionY: 0,
-      resetCar: true
+      resetCar: true,
+      distanceToFrontCar: "0"
     }
   },
   mounted() {
@@ -62,7 +65,8 @@ export default defineComponent({
           this.street.coordinates[0].x,
           this.street.coordinates[0].y,
           parseInt(this.speed),
-          this.street.coordinates
+          this.street.coordinates,
+          parseFloat(this.distanceToFrontCar)
           )
       )
       this.carId++
@@ -85,8 +89,15 @@ export default defineComponent({
         this.context.clearRect(0, 0, this.canvasFromView.width, this.canvasFromView.height)
         if (Object.keys(this.street).length > 0)
           this.street.drawStreet(this.context)
-        this.cars.forEach(car => {
-          car.drive(this.context)
+        this.cars.forEach((car, index, carArray) => {
+          if(carArray[index+1] && car.distanceToFrontCar > 0 && !car.startDrive){
+            const a = car.posX - carArray[index+1].posX
+            const b = car.posY - carArray[index+1].posY
+            const actualDistanceToFrontCar = Math.hypot(a, b)
+            if(actualDistanceToFrontCar >= car.distanceToFrontCar)
+              car.drive(this.context)
+          }else car.drive(this.context)
+
         })
       }
       setTimeout(() => this.loop(), 100)
