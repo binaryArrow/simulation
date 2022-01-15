@@ -12,6 +12,8 @@ export class Car {
     streets: Coordinates[]
     angle: number
     distanceToFrontCar: number
+    distanceToFrontCarMeter: number
+    reactionLengthInPx: number
     // angle for moving
     sin?: number // for X position
     cos?: number // for Y position
@@ -20,6 +22,8 @@ export class Car {
     brakeLength = 0
     brakePosition?: Coordinates
     startDrive = false
+    color = '#000'
+    actualDistance = 0
 
     constructor(id: number, posX: number, posY: number, speed: number, streets: Coordinates[], distanceToFrontCar: number) {
         this.id = id
@@ -31,7 +35,9 @@ export class Car {
         this.convertedSpeedInPx = speed/10
         this.initialSpeed = speed
         this.streets = streets
-        this.distanceToFrontCar = distanceToFrontCar
+        this.distanceToFrontCar = distanceToFrontCar * 3.6
+        this.distanceToFrontCarMeter = distanceToFrontCar
+        this.reactionLengthInPx = (this.initialSpeed/10) * 10.8
         this.angle = Math.atan2(
             this.streets[this.count + 1].y - this.streets[this.count].y,
             this.streets[this.count + 1].x - this.streets[this.count].x
@@ -41,17 +47,28 @@ export class Car {
     drawCar(context: CanvasRenderingContext2D): void {
         context.beginPath()
         context.arc(this.posX, this.posY, 10, 0, Math.PI * 2, false)
-        context.fillStyle = '#000'
+        context.fillStyle = `${this.color}`
         context.fill()
         context.fillStyle = '#fff'
         context.font = 'bold 15px serif'
         context.fillText(`${this.id}`, this.posX - 5, this.posY + 6)
     }
 
-    drive(context: CanvasRenderingContext2D): void {
+    drive(context: CanvasRenderingContext2D, actualDistance: number): void {
         if (this.streets.length > 1 && this.count < this.streets.length - 1) {
-            if(this.brake)
+            if(this.brake){
                 this.brakeCar()
+                if(actualDistance < 5 && actualDistance != -1)
+                    this.color = '#940101'
+                if(actualDistance == -1)
+                    this.actualDistance = 0
+                else
+                    this.actualDistance = actualDistance%3.6
+            }
+            if(actualDistance > 0  && actualDistance < this.distanceToFrontCar && !this.brake && this.startDrive) {
+                this.brakePosition = new Coordinates(this.posX, this.posY)
+                this.brake = true
+            }
             this.angle = Math.atan2(
                 this.streets[this.count + 1].y - this.streets[this.count].y,
                 this.streets[this.count + 1].x - this.streets[this.count].x
@@ -88,17 +105,22 @@ export class Car {
         this.speed = this.initialSpeed
         this.convertedSpeedInPx = this.initialSpeed/10
         this.startDrive = false
+        this.color = '#000'
     }
     brakeCar(): void{
-        console.log("braked!!!!")
-        //Bremsbeschleunigung konstante, Siehe Ausarbeitung.
-        this.convertedSpeedInPx -= 0.2777777777777778
-        if(this.convertedSpeedInPx < 0){
-            const a = this.brakePosition!.x - this.posX
-            const b = this.brakePosition!.y - this.posY
-            this.brakeLength = Math.hypot(a, b)
-            console.log(`BrakeLength = ${this.brakeLength}`)
-            this.convertedSpeedInPx = 0
+        const reactionA = this.brakePosition!.x - this.posX
+        const reactionB = this.brakePosition!.y - this.posY
+        if(this.reactionLengthInPx <= Math.hypot(reactionA, reactionB)) {
+            console.log("braked!!!!")
+            //Bremsbeschleunigung konstante, Siehe Ausarbeitung.
+            this.convertedSpeedInPx -= 0.2777777777777778
+            if (this.convertedSpeedInPx < 0) {
+                const a = this.brakePosition!.x - this.posX
+                const b = this.brakePosition!.y - this.posY
+                this.brakeLength = Math.hypot(a, b)
+                console.log(`BrakeLength = ${this.brakeLength}`)
+                this.convertedSpeedInPx = 0
+            }
         }
     }
 }

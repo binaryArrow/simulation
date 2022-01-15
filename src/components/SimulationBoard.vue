@@ -10,21 +10,25 @@
   <input id="speed-input" v-model="speed" placeholder="speed">
   <label>id: </label>
   <input id="carId-input" v-model="carId" placeholder="">
-  <label>distance to Car in front: </label>
+  <label>distance to Car in front(meter): </label>
   <input id="carId-input" v-model="distanceToFrontCar" placeholder="">
   <table id="cars-table">
     <tr>
       <th>car id</th>
       <th>Speed</th>
+      <th>distance to front car</th>
     </tr>
     <tr v-for="(car, index) in cars" :key="index">
       <td>
-        {{car.id}}
+        {{ car.id }}
         <button id="brake-button" @click="deleteCar(index)">delete</button>
       </td>
       <td>
-        {{car.initialSpeed}}
+        {{ car.initialSpeed }}
         <button id="brake-button" @click="brake(index)">brake</button>
+      </td>
+      <td>
+        {{ `${car.distanceToFrontCarMeter} meter safety distance` }}
       </td>
     </tr>
   </table>
@@ -61,12 +65,12 @@ export default defineComponent({
   methods: {
     createCar() {
       this.cars.push(new Car(
-          this.carId,
-          this.street.coordinates[0].x,
-          this.street.coordinates[0].y,
-          parseInt(this.speed),
-          this.street.coordinates,
-          parseFloat(this.distanceToFrontCar)
+              this.carId,
+              this.street.coordinates[0].x,
+              this.street.coordinates[0].y,
+              parseInt(this.speed),
+              this.street.coordinates,
+              parseFloat(this.distanceToFrontCar)
           )
       )
       this.carId++
@@ -77,84 +81,103 @@ export default defineComponent({
           car.drawCar(this.context)
         })
     },
-    deleteCar(index: number){
+    deleteCar(index: number) {
       this.cars.splice(index, 1)
     },
-    brake(index: number){
+    brake(index: number) {
       this.cars[index].brakePosition = new Coordinates(this.cars[index].posX, this.cars[index].posY)
+      this.cars[index].color = '#af8514'
       this.cars[index].brake = true
-    },
-    loop() {
-      if(!this.resetCar){
-        this.context.clearRect(0, 0, this.canvasFromView.width, this.canvasFromView.height)
-        if (Object.keys(this.street).length > 0)
-          this.street.drawStreet(this.context)
-        this.cars.forEach((car, index, carArray) => {
-          if(carArray[index+1] && car.distanceToFrontCar > 0 && !car.startDrive){
-            const a = car.posX - carArray[index+1].posX
-            const b = car.posY - carArray[index+1].posY
-            const actualDistanceToFrontCar = Math.hypot(a, b)
-            if(actualDistanceToFrontCar >= car.distanceToFrontCar)
-              car.drive(this.context)
-          }else car.drive(this.context)
-
-        })
-      }
-      setTimeout(() => this.loop(), 100)
-    },
-    start(){
-      this.resetCar = false
-    },
-    reset(){
-      this.resetCar = true
+      // this.cars.forEach(car => {
+      //   car.brake = true
+      //   car.brakePosition = new Coordinates(car.posX, car.posY)
+      //     }
+      // )
+    }
+  ,
+  loop() {
+    if (!this.resetCar) {
       this.context.clearRect(0, 0, this.canvasFromView.width, this.canvasFromView.height)
       if (Object.keys(this.street).length > 0)
         this.street.drawStreet(this.context)
-      this.cars.forEach(car =>{
-        car.reset()
-        car.drawCar(this.context)
-      })
-    },
-    createStreet(event: any) {
-      let rect = this.canvasFromView.getBoundingClientRect()
-      this.clicks += 1
-      if (this.clicks > 1) {
-        // last Coordinate
-        let coordinate1: Coordinates = new Coordinates(
-            this.lastMouseClickPositionX,
-            this.lastMouseClickPositionY)
-        // actual coordinate
-        let coordinate2: Coordinates = new Coordinates(
-            event.clientX - rect.left,
-            event.clientY - rect.top
-        )
-        if (Object.keys(this.street).length > 0) {
-          this.street.addCoordinate(coordinate2)
-        } else {
-          this.street = new Street(coordinate1, coordinate2)
+      this.cars.forEach((car, index, carArray) => {
+        let actualDistanceToFrontCar = -1
+        if (carArray[index + 1]) {
+          const a = car.posX - carArray[index + 1].posX
+          const b = car.posY - carArray[index + 1].posY
+          actualDistanceToFrontCar = Math.hypot(a, b)
         }
-      }
-      if (Object.keys(this.street).length > 0)
-        this.street.drawStreet(this.context)
+        if (carArray[index + 1] && car.distanceToFrontCar > 0 && !car.startDrive) {
+          const a = car.posX - carArray[index + 1].posX
+          const b = car.posY - carArray[index + 1].posY
+          actualDistanceToFrontCar = Math.hypot(a, b)
+          if (actualDistanceToFrontCar >= car.distanceToFrontCar) {
+            car.drive(this.context, actualDistanceToFrontCar)
+          }
+        } else {
+          car.drive(this.context, actualDistanceToFrontCar)
+        }
 
-      this.lastMouseClickPositionX = event.clientX - rect.left
-      this.lastMouseClickPositionY = event.clientY - rect.top
+      })
     }
+    setTimeout(() => this.loop(), 100)
   },
-});
+  start() {
+    this.resetCar = false
+  },
+  reset() {
+    this.resetCar = true
+    this.context.clearRect(0, 0, this.canvasFromView.width, this.canvasFromView.height)
+    if (Object.keys(this.street).length > 0)
+      this.street.drawStreet(this.context)
+    this.cars.forEach(car => {
+      car.reset()
+      car.drawCar(this.context)
+    })
+  },
+  createStreet(event: any) {
+    let rect = this.canvasFromView.getBoundingClientRect()
+    this.clicks += 1
+    if (this.clicks > 1) {
+      // last Coordinate
+      let coordinate1: Coordinates = new Coordinates(
+          this.lastMouseClickPositionX,
+          this.lastMouseClickPositionY)
+      // actual coordinate
+      let coordinate2: Coordinates = new Coordinates(
+          event.clientX - rect.left,
+          event.clientY - rect.top
+      )
+      if (Object.keys(this.street).length > 0) {
+        this.street.addCoordinate(coordinate2)
+      } else {
+        this.street = new Street(coordinate1, coordinate2)
+      }
+    }
+    if (Object.keys(this.street).length > 0)
+      this.street.drawStreet(this.context)
+
+    this.lastMouseClickPositionX = event.clientX - rect.left
+    this.lastMouseClickPositionY = event.clientY - rect.top
+  }
+},
+})
+;
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-#speed-input{
+#speed-input {
   width: 25px;
   margin-right: 2px;
 }
-#carId-input{
+
+#carId-input {
   width: 25px;
   margin-right: 2px;
 }
-#cars-table{
+
+#cars-table {
   margin-top: 10px;
   margin-left: auto;
   margin-right: auto;
@@ -164,14 +187,19 @@ export default defineComponent({
   text-align: center;
 
 }
+
 #cars-table td, #cars-table th {
   border: 1px solid black;
   padding: 8px;
 }
 
-#cars-table tr:nth-child(even){background-color: #f2f2f2;}
+#cars-table tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
 
-#cars-table tr:hover {background-color: #ddd;}
+#cars-table tr:hover {
+  background-color: #ddd;
+}
 
 #cars-table th {
   padding-top: 12px;
@@ -180,10 +208,12 @@ export default defineComponent({
   background-color: #04AA6D;
   color: white;
 }
+
 button {
 
 }
-.styled-button{
+
+.styled-button {
   padding: 13px 18px;
   font-size: 19px;
   margin: 4px;
@@ -195,41 +225,50 @@ button {
   border-radius: 15px;
   box-shadow: 0 9px #999;
 }
-#car_button{
+
+#car_button {
   background-color: #4CAF50;
 }
+
 #car_button:hover {
   background-color: #50d354;
 }
-#car_button:active{
+
+#car_button:active {
   background-color: #50d354;
   box-shadow: 0 5px #666;
   transform: translateY(4px);
 }
 
-#start_button{
+#start_button {
   background-color: #5ca4cb;
 }
-#start_button:hover{
+
+#start_button:hover {
   background-color: #5eb6e8;
 }
-#start_button:active{
+
+#start_button:active {
   background-color: #5eb6e8;
   box-shadow: 0 5px #666;
   transform: translateY(4px);
 }
-#reset-button{
+
+#reset-button {
   background-color: darkred;
 }
-#reset-button:hover{
+
+#reset-button:hover {
   background-color: red;
 }
-#reset-button:active{
+
+#reset-button:active {
   background-color: red;
   box-shadow: 0 5px #666;
   transform: translateY(4px);
 }
-#brake-button{
+
+#brake-button {
   background-color: darkred;
   padding: 9px 9px;
   font-size: 12px;
@@ -241,10 +280,12 @@ button {
   border: none;
   border-radius: 15px;
 }
-#brake-button:hover{
-background-color: red;
+
+#brake-button:hover {
+  background-color: red;
 }
-#brake-button:active{
+
+#brake-button:active {
   background-color: red;
   box-shadow: 0 5px #666;
   transform: translateY(4px);
