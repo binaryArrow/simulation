@@ -3,6 +3,8 @@
     <canvas ref="board" width="1000" height="600" @click="createStreet"></canvas>
   </div>
 
+  <input type="checkbox" v-model="withCar2Car">
+  <label>car to car communication on/off</label>
   <button class="styled-button" id="start_button" @click="start">Start</button>
   <button class="styled-button" id="car_button" @click="createCar">Add Car</button>
   <button class="styled-button" id="reset-button" @click="reset">Reset</button>
@@ -54,7 +56,8 @@ export default defineComponent({
       lastMouseClickPositionX: 0,
       lastMouseClickPositionY: 0,
       resetCar: true,
-      distanceToFrontCar: "0"
+      distanceToFrontCar: "0",
+      withCar2Car: false
     }
   },
   mounted() {
@@ -107,17 +110,25 @@ export default defineComponent({
           const b = car.posY - carArray[index + 1].posY
           actualDistanceToFrontCar = Math.hypot(a, b)
         }
+        // start car after input distance
         if (carArray[index + 1] && car.distanceToFrontCar > 0 && !car.startDrive) {
           const a = car.posX - carArray[index + 1].posX
           const b = car.posY - carArray[index + 1].posY
           actualDistanceToFrontCar = Math.hypot(a, b)
           if (actualDistanceToFrontCar >= car.distanceToFrontCar) {
-            car.drive(this.context, actualDistanceToFrontCar)
+            car.drive(this.context, actualDistanceToFrontCar, carArray[index+1].broadcast)
           }
-        } else {
-          car.drive(this.context, actualDistanceToFrontCar)
-        }
-
+          // look if car has a car in front
+        } else if (carArray[index+1]) {
+          if(this.withCar2Car){
+            const broadCasts = this.cars.map((car, index) => {
+              if (car.broadcast)
+                return {broadCast: car.broadcast, index: index}
+            })
+            const foundBroadcast = broadCasts.find(broadcast => broadcast?.broadCast && broadcast.index > index)
+            car.drive(this.context, actualDistanceToFrontCar, foundBroadcast?.broadCast)
+          } else car.drive(this.context, actualDistanceToFrontCar)
+        } else car.drive(this.context, actualDistanceToFrontCar)
       })
     }
     setTimeout(() => this.loop(), 100)
