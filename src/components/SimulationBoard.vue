@@ -127,7 +127,7 @@ export default defineComponent({
             })
             const foundBroadcast = broadCasts.find(broadcast => broadcast?.broadCast && broadcast.index > index)
             car.drive(this.context, actualDistanceToFrontCar, foundBroadcast?.broadCast)
-          } else car.drive(this.context, actualDistanceToFrontCar)
+          } else car.drive(this.context, actualDistanceToFrontCar, carArray[index+1].brakeLight)
         } else car.drive(this.context, actualDistanceToFrontCar)
       })
     }
