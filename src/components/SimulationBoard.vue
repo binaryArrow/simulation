@@ -89,13 +89,7 @@ export default defineComponent({
     },
     brake(index: number) {
       this.cars[index].brakePosition = new Coordinates(this.cars[index].posX, this.cars[index].posY)
-      this.cars[index].color = '#af8514'
       this.cars[index].brake = true
-      // this.cars.forEach(car => {
-      //   car.brake = true
-      //   car.brakePosition = new Coordinates(car.posX, car.posY)
-      //     }
-      // )
     }
   ,
   loop() {

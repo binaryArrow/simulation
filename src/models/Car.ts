@@ -57,6 +57,11 @@ export class Car {
         context.fillText(`${this.id}`, this.posX - 5, this.posY + 6)
     }
 
+    /*
+    drive class, which is constantly running when the car is driving
+    one can input the broadcast to receive broadcast messages to break
+    or this method gets a frontbreaklight argument to react to front car breaking
+     */
     drive(context: CanvasRenderingContext2D, actualDistance: number, broadcast?: boolean, frontBrakeLight?: boolean): void {
         if (this.streets.length > 1 && this.count < this.streets.length - 1) {
             if (broadcast && !this.brake && this.startDrive) {
@@ -72,10 +77,6 @@ export class Car {
                 else
                     this.actualDistance = actualDistance / 3.6
             }
-            // if(actualDistance > 0  && actualDistance < this.distanceToFrontCar && !this.brake && this.startDrive) {
-            //     this.brakePosition = new Coordinates(this.posX, this.posY)
-            //     this.brake = true
-            // }
             if (frontBrakeLight) {
                 this.brakePosition = new Coordinates(this.posX, this.posY)
                 this.brake = true
@@ -90,14 +91,8 @@ export class Car {
             this.posY += this.sin
             const a = this.posX - this.streets[this.count + 1].x
             const b = this.posY - this.streets[this.count + 1].y
-            //console.log(`x: ${this.posX} y: ${this.posY}`)
-            //distance between car and wall
-            //console.log(Math.hypot(a, b))
             this.startDrive = true
 
-            // look if car is hitting a wall
-            // if so change direction to next street vector
-            // 10 is the radius of the car circle
             if (Math.hypot(a, b) < 10) {
                 this.count++
 
@@ -119,12 +114,15 @@ export class Car {
         this.color = '#000'
         this.brakeLog = true
         this.broadcast = false
+        this.brakeLight = false
     }
 
     brakeCar(): void {
         const reactionA = this.brakePosition!.x - this.posX
         const reactionB = this.brakePosition!.y - this.posY
         if (this.reactionLengthInPx <= Math.hypot(reactionA, reactionB)) {
+            if(this.color!='#940101')
+                this.color = '#af8514'
             this.broadcast = true
             this.brakeLight = true
             //Bremsbeschleunigung konstante, Siehe Ausarbeitung.
